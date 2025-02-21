@@ -1,0 +1,77 @@
+version: '3.7'
+
+services:
+  broker:
+    image: eclipse-mosquitto:2.0.20
+    ports:
+      - "1883:1883"
+    networks:
+      - broker_adapter_network
+    configs:
+      - source: mosquitto_config
+        target: /mosquitto/config/mosquitto.conf
+
+  influxdb:
+    image: influxdb:2.7.11
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: root
+      DOCKER_INFLUXDB_INIT_PASSWORD: root12345
+      DOCKER_INFLUXDB_INIT_ORG: my_org
+      DOCKER_INFLUXDB_INIT_BUCKET: my_bucket
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my_token
+    volumes:
+      - ./influxdb_data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    networks:
+      - adapter_db_network
+      - db_grafana_network
+
+  adapter:
+    image: adapter
+    depends_on:
+      - broker
+      - influxdb
+    networks:
+      - broker_adapter_network
+      - adapter_db_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=asistent
+      - GF_SECURITY_ADMIN_PASSWORD=grafanaSCD2024
+    ports:
+      - "80:3000"
+    volumes:
+      - ./grafana_data:/var/lib/grafana
+      - ./datasources:/etc/grafana/provisioning/datasources
+      - ./dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - db_grafana_network
+
+
+networks:
+  broker_adapter_network:
+    name: broker_adapter_network
+  adapter_db_network:
+    name: adapter_db_network
+  db_grafana_network:
+    name: db_grafana_network
+
+configs:
+  mosquitto_config:
+    file: ./mosquitto.conf
+
+volumes:
+  influxdb_data:
+  grafana_data:
+  datasources:
+  dashboards:
