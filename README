@@ -1,54 +1,27 @@
-Simion George-Vlad
-342C5
+### Simion George-Vlad  
+**342C5**  
 
-                Tema 3 - Platformă IoT folosind Microservicii
+#### Assignment 3 - IoT Platform Using Microservices  
 
-        Tema consta in colectarea, stocarea si vizualizarea de date numerice
-provenite de dispozitive IoT.
-        In cadrul temei, componentele au constat in:
+The assignment consists of collecting, storing, and visualizing numerical data from IoT devices.  
 
-    1. Dispozitive cu senzori conectate la Internet - pentru acest lucru,
-a fost realizat un simulator in Python, unde am simulat cum niste device-uri,
-conectate la broker-ul de mesaje, trimit informatii.
-    2. Broker de mesaje - pentru acesta, am folosit ca microserviciu, ultima
-versiune de Eclipse Mosquitto, care implementeaza versiunea cautata de MQTT.
-Atat in cadrul adaptorului, cat si al simulatorului, ambele scrise in Python,
-am folosit biblioteca paho.mqtt, pentru a realiza conexiunea la broker. In crearea
-microserviciului in Docker, am mapat la portul 1883, am creat o retea proprie,
-unde doar adaptorul si brokerul se pot conecta, dintre microservicii. Pentru a putea
-evita autentificarea si pentru a putea asculta pe portul 1883, am realizat 
-un fisier de configurare pentru mosquitto.
-    3. O baza de date de tipul TSDB - pentru aceasta, am folosit baza de date
-InfluxDB, a doua versiune, maparea a fost facuta pe portul 8086, a fost creat
-local un volum, pentru a fi pastrata persistenta datelor, in momentul in care
-este oprit microserviciul, iar ca retele, apartine retelei care are adaptorul
-si o a doua retea care tine de Grafana.
-    4. Adaptor - acesta este realizat in Python, iar scopul este de a parsa
-mesajele pe care le trimit senzorii si sunt scrise in baza de date. Pentru a putea
-fi la curent cu ce se intampla, am configurat si logger-ul, in formatul cerintei,
-dar exista o variabila de mediu care decide daca in cadrul serviciului sa fie 
-afisate informatii sau nu. In cadrul functiei _on_message, care se ocupa de mesajele
-preiau datele si le despart corespunzator pentru a putea pregati informatiile
-ce vor fi scrise in baza de date. Folosesc biblioteca influxdb_client
-care imi ofera facilitati precum crearea clientului pentru scrierea in baza de date,
-clasa Point care mi-a oferit sprijinul de a redacta corect formatul si scrierea
-efectiva prin WriteOptions.
-    5. Grafana - pentru a vizualiza datele, am folosit Grafana, versiunea 11.4.0,
-care este mapata pe portul 3000, si are o retea proprie, unde doar adaptorul si
-grafana se pot conecta. In cadrul Grafanei, am facut configuratia locala prin
-fisierele dashboard.yml si datasource.yaml, pentru a putea vizualiza direct la
-momentul de login in aplicatie.
+The components of the project are:  
 
-    Cum se ruleaza:
-    1. Pentru a rula aplicatia, se va rula comanda ./run.sh, care va porni
-toate microserviciile, si va crea toate retelele necesare.
-    2. Pentru a opri aplicatia, se va rula comanda sudo ./cleanup.sh, care va opri
-toate microserviciile, si va sterge toate retelele create, precum si volumele
-persistente.
+1. **Devices with sensors connected to the Internet** – A Python-based simulator was created to emulate devices sending data to a message broker.  
+2. **Message broker** – The latest version of Eclipse Mosquitto was used as a microservice to implement the required MQTT version. The `paho.mqtt` library was used in both the adapter and simulator (both written in Python) to establish a connection to the broker. In Docker, the microservice was mapped to port 1883, with a dedicated network allowing only the adapter and broker to connect. A Mosquitto configuration file was created to avoid authentication requirements and enable listening on port 1883.  
+3. **Time Series Database (TSDB)** – InfluxDB v2 was used, mapped to port 8086. A local volume was created for data persistence when the microservice stops. The database belongs to the adapter’s network and another network connected to Grafana.  
+4. **Adapter** – Implemented in Python, the adapter parses messages from sensors and writes them to the database. Logging was configured as required, with an environment variable controlling log display. The `_on_message` function processes incoming messages, extracts data, and prepares it for database storage. The `influxdb_client` library was used, leveraging features like client creation, the `Point` class for proper formatting, and writing via `WriteOptions`.  
+5. **Grafana** – Version 11.4.0 was used for data visualization, mapped to port 3000 with a dedicated network allowing only the adapter and Grafana to connect. Local configuration was done using `dashboard.yml` and `datasource.yaml` to ensure dashboards are available upon login.  
 
-    Cum se foloseste:
-    1. Pentru a vedea datele in Grafana, se va deschide un browser si se va accesa
-adresa http://localhost:80, unde se va introduce user-ul si parola, care sunt
-asistent si grafanaSCD2024.
-    2. Pentru a rula simulatorul, se va rula comanda python3 mqtt_device_simulator.py,
-din directorul simulator.
+#### How to Run:  
+1. Run `./run.sh` to start all microservices and create necessary networks.  
+2. Run `sudo ./cleanup.sh` to stop all microservices and delete networks and persistent volumes.  
+
+#### How to Use:  
+1. To view data in Grafana, open a browser and go to `http://localhost:80`, then log in with:  
+   - **Username:** `asistent`  
+   - **Password:** `grafanaSCD2024`  
+2. To run the simulator, navigate to the `simulator` directory and execute:  
+   ```
+   python3 mqtt_device_simulator.py
+   ```
